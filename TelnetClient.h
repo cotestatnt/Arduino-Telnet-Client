@@ -1,33 +1,33 @@
-/* 
+/*
  * Copyright 2017 Alessio Villa
- * 
+ *
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have negotiationd a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
- * 
- * 
+ *
+ *
  */
-#ifndef TELNETC_H
-#define TELNETC_H
+#ifndef TELNETCLIENT_H
+#define TELNETCLIENT_H
 
-#include <Ethernet.h>
+#include "Arduino.h"
+#include "Client.h"
 
-//#define TNDBG 1
-//#define MT_VM 1//for me to work with a virtual machine running a mikrotik router
+#define TNDBG 0
 
-#ifdef TNDBG
+#if TNDBG
  #define DEBUG_PRINT(x)  Serial.println (x)
 #else
  #define DEBUG_PRINT(x)
@@ -44,26 +44,32 @@ const unsigned int LISTEN_TOUT = 5000;
 //how long, after a "prompt char" is received you can confirm it's the real prompt and not just part of the server's answer
 const uint16_t PROMPT_REC_TOUT = 300;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- 
-class telnetClient{
+
+class TelnetClient{
 
 public:
 
-    telnetClient(EthernetClient& client);
+    TelnetClient(Client &client, const char* host, int port = 23);
+	TelnetClient(Client &client, IPAddress ip, int port = 23);
+	~TelnetClient(){};
 
-    bool login(IPAddress serverIpAddress, const char* username, const char* password, uint8_t port = 23);
+	bool connect();
+    bool login(const char* username, const char* password);
 	bool sendCommand(const char* cmd);
     void disconnect();
     void setPromptChar(char c);
+	void listen();
 
 private:
-	
-	EthernetClient* client;
+
+	Client* telnetClient;
 	char m_promptChar = '>';
-	
+	int  port;
+	const char* host;
+	IPAddress   hostIp;
+
 	bool send(const char* buf, bool waitEcho = true);
 	void negotiate();
-	void listen();
 	bool listenUntil(char c);
 	bool waitPrompt();
 	void print(char c);

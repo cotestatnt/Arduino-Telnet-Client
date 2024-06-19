@@ -1,14 +1,19 @@
 #include <WiFi.h>
 #include <TelnetClient.h>
 
+//////////////////////////////////////////////////////////////////////
+// Use Putty as serial terminal for better output with this example //
+//////////////////////////////////////////////////////////////////////
+
+
 //please enter your sensitive data in the Secret tab
-char ssid[] = "xxxxxxxx";                // your network SSID (name)
-char pass[] = "xxxxxxxx";                // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "xxxxxxxxx";               // your network SSID (name)
+char pass[] = "xxxxxxxxx";               // your network password (use for WPA, or use as key for WEP)
 int status = WL_IDLE_STATUS;             // the Wi-Fi radio's status
 
 
 // Put here your telnet's ip address or hostname
-IPAddress   telnetHost(192, 168, 1, 22);
+const char* telnetHost = "towel.blinkenlights.nl" ;
 const int   telnetPort = 23;
 
 WiFiClient baseClient;
@@ -35,23 +40,14 @@ void setup () {
   // WICH CHARACTER SHOULD BE INTERPRETED AS "PROMPT"?
   telnet.setPromptChar('$');
 
-  // PUT HERE YOUR USERNAME/PASSWORD
-  if(telnet.login("pi", "raspberry")) {
-    telnet.sendCommand("ls -l");
-    telnet.sendCommand("ifconfig");
-  }
-  else{
-    Serial.println("login failed");
+  // no user login needed for this server
+  if (!telnet.connect()) {
+    Serial.println("No telnet connection");
+    while (1);
   }
 
 }
 
 void loop () {
-
-  // Use serial input as telnet user prompt
-  while (Serial.available()) {
-    String cmd = Serial.readStringUntil('\n');
-    telnet.sendCommand(cmd.c_str());
-  }
-
+  telnet.listen();
 }
